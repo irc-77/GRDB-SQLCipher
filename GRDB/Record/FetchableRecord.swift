@@ -266,7 +266,9 @@ extension FetchableRecord {
         decoder.dataDecodingStrategy = .base64
         decoder.dateDecodingStrategy = .millisecondsSince1970
         decoder.nonConformingFloatDecodingStrategy = .throw
-        decoder.userInfo = databaseDecodingUserInfo
+        // Xcode 26+: JSONDecoder.userInfo is [CodingUserInfoKey: any Sendable].
+        // Bridge, dropping values that are not Sendable (the default is [:]).
+        decoder.userInfo = databaseDecodingUserInfo.compactMapValues { $0 as? any Sendable }
         return decoder
     }
     
