@@ -240,7 +240,9 @@ extension EncodableRecord {
         encoder.nonConformingFloatEncodingStrategy = .throw
         // guarantee some stability in order to ease record comparison
         encoder.outputFormatting = .sortedKeys
-        encoder.userInfo = databaseEncodingUserInfo
+        // Xcode 26+: JSONEncoder.userInfo is [CodingUserInfoKey: any Sendable].
+        // Bridge, dropping values that are not Sendable (the default is [:]).
+        encoder.userInfo = databaseEncodingUserInfo.compactMapValues { $0 as? any Sendable }
         return encoder
     }
     
