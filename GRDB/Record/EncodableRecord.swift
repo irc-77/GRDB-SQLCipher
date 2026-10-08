@@ -89,7 +89,7 @@ public protocol EncodableRecord: GRDBSendableMetatype {
     ///
     /// struct Player: PersistableRecord, Encodable {
     ///     // Customize the encoder name when encoding a database row
-    ///     static var databaseEncodingUserInfo: [CodingUserInfoKey: Any] {
+    ///     static var databaseEncodingUserInfo: [CodingUserInfoKey: any Sendable] {
     ///         [encoderName: "Database"]
     ///     }
     ///
@@ -112,7 +112,7 @@ public protocol EncodableRecord: GRDBSendableMetatype {
     /// ```
     ///
     /// > Important: Make sure the `databaseEncodingUserInfo` property is
-    /// > explicitly declared as `[CodingUserInfoKey: Any]`. If it is not,
+    /// > explicitly declared as `[CodingUserInfoKey: any Sendable]`. If it is not,
     /// > the Swift compiler may silently miss the protocol requirement.
     ///
     /// > Important: Make sure the property is declared as a computed
@@ -123,11 +123,11 @@ public protocol EncodableRecord: GRDBSendableMetatype {
     /// > ```swift
     /// > // static property 'databaseEncodingUserInfo' is not
     /// > // concurrency-safe because non-'Sendable' type
-    /// > // '[CodingUserInfoKey: Any]' may have shared
+    /// > // '[CodingUserInfoKey: any Sendable]' may have shared
     /// > // mutable state.
-    /// > static let databaseEncodingUserInfo: [CodingUserInfoKey: Any] = [encoderName: "Database"]
+    /// > static let databaseEncodingUserInfo: [CodingUserInfoKey: any Sendable] = [encoderName: "Database"]
     /// > ```
-    static var databaseEncodingUserInfo: [CodingUserInfoKey: Any] { get }
+    static var databaseEncodingUserInfo: [CodingUserInfoKey: any Sendable] { get }
     
     /// Returns the `JSONEncoder` that encodes the value for a given column.
     ///
@@ -220,7 +220,7 @@ extension EncodableRecord {
     /// `Encodable.encode(to:)` method.
     ///
     /// The default implementation returns an empty dictionary.
-    public static var databaseEncodingUserInfo: [CodingUserInfoKey: Any] {
+    public static var databaseEncodingUserInfo: [CodingUserInfoKey: any Sendable] {
         [:]
     }
     
@@ -240,9 +240,7 @@ extension EncodableRecord {
         encoder.nonConformingFloatEncodingStrategy = .throw
         // guarantee some stability in order to ease record comparison
         encoder.outputFormatting = .sortedKeys
-        // Xcode 26+: JSONEncoder.userInfo is [CodingUserInfoKey: any Sendable].
-        // Bridge, dropping values that are not Sendable (the default is [:]).
-        encoder.userInfo = databaseEncodingUserInfo.compactMapValues { $0 as? any Sendable }
+        encoder.userInfo = databaseEncodingUserInfo
         return encoder
     }
     
